@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Grid : MonoBehaviour
 {
@@ -9,6 +10,10 @@ public class Grid : MonoBehaviour
     public Vector2 gridWorldSize;//area of the grid
     public float nodeRadius;// how large each node is
     Node[,] grid;//2d array representing the grid
+
+    public TerrainType[] walkableRegions;
+    LayerMask walkableMask;
+    Dictionary<int, int> walkableRegionsDictionary = new Dictionary<int, int>();
 
 
     float nodeDiamater;
@@ -25,12 +30,44 @@ public class Grid : MonoBehaviour
         nodeDiamater = nodeRadius*2;
         gridSizeX = Mathf.RoundToInt(gridWorldSize.x / nodeDiamater);
         gridSizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiamater);
+
+        foreach (TerrainType region in walkableRegions) {
+            walkableMask.value |= region.terrainMask.value; //adding each layer within our walkable regions to the walkable mask
+            walkableRegionsDictionary.Add((int)Mathf.Log(region.terrainMask.value, 2), region.terrainPenalty);
+        }
         CreateGrid();
+    }
+
+    void CreateGrid(){
+        grid = new Node[gridSizeX, gridSizeY];
+        //basically (0,0,0) - (gridWorldSize.x/2,0,0) - (0, 0, gridWorldSize.y/2) = (-gridWorldSize.x/2,0,-gridWorldsize.y/2)
+        Vector3 worldBottomLeft = transform.position + (Vector3.left * (gridWorldSize.x/2)) - (Vector3.forward * (gridWorldSize.y/2));
+
+        for (int x = 0; x < gridSizeX; x++){
+            for (int y = 0; y < gridSizeY; y++){
+                //getting a point smack in the middle of each node in our grid
+                Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * nodeDiamater + nodeRadius) + Vector3.forward * (y * nodeDiamater + nodeRadius);
+                //checks point of size nodeRadius centered around worldPoint (our node) collides with anything with our unwalkable mask. If it does then walkable is false
+                bool walkable = !Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask);
+
+                int movementPenalty = 0;
+                if (walkable) {
+                    Ray ray = new Ray(worldPoint + Vector3.up * 50, Vector3.down); //a ray directly above the node fired straight down
+                    if (Physics.Raycast(ray, out RaycastHit hit, 100, walkableMask)) {
+                        walkableRegionsDictionary.TryGetValue(hit.collider.gameObject.layer, out movementPenalty);
+                    }
+
+                }
+
+                grid[x,y] = new Node(walkable, worldPoint, x, y, movementPenalty);
+            }
+        }
+
     }
 
 
     //given a node, return its neighbors as a list
-    public List<Node> GetNeigbors (Node node){ 
+    public List<Node> GetNeighbors (Node node){ 
         List<Node> neighbors = new List<Node>();
 
         for (int x = -1; x <= 1; x++){
@@ -50,25 +87,6 @@ public class Grid : MonoBehaviour
         return neighbors;
     }
 
-    void CreateGrid(){
-        grid = new Node[gridSizeX, gridSizeY];
-        //basically (0,0,0) - (gridWorldSize.x/2,0,0) - (0, 0, gridWorldSize.y/2) = (-gridWorldSize.x/2,0,-gridWorldsize.y/2)
-        Vector3 worldBottomLeft = transform.position + (Vector3.left * (gridWorldSize.x/2)) - (Vector3.forward * (gridWorldSize.y/2));
-
-        for (int x = 0; x < gridSizeX; x++){
-            for (int y = 0; y < gridSizeY; y++){
-                //getting a point smack in the middle of each node in our grid
-                Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * nodeDiamater + nodeRadius) + Vector3.forward * (y * nodeDiamater + nodeRadius);
-
-                //checks point of size nodeRadius centered around worldPoint (our node) collides with anything with our unwalkable mask. If it does then walkable is false
-                bool walkable = !Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask);
-
-                grid[x,y] = new Node(walkable, worldPoint, x, y);
-            }
-        }
-
-    }
-
 
     //returns a Node within the NodeGrid at whatever the provided position is
     public Node NodeFromWorldPoint(Vector3 worldPosition) {
@@ -86,7 +104,7 @@ public class Grid : MonoBehaviour
     }
 
     
-    //draw out grid for visualizations sake
+    //draw out grid for visualization’s sake
     void OnDrawGizmos() {
         Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x, 1, gridWorldSize.y));
 
@@ -96,5 +114,12 @@ public class Grid : MonoBehaviour
                 Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiamater-.1f));
             }
         } 
+    }
+    [System.Serializable]
+    public class TerrainType
+    {
+        public LayerMask terrainMask;
+        public int terrainPenalty;
+
     }
 }

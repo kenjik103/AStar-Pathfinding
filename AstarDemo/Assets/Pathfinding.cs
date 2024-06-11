@@ -44,7 +44,7 @@ public class Pathfinding : MonoBehaviour
                     break;
                 }
     
-                foreach (Node neighbor in grid.GetNeigbors(currentNode)) {
+                foreach (Node neighbor in grid.GetNeighbors(currentNode)) {
                     //if neighbor is not traversable or neigbor is in CLOSED
                     if (!neighbor.walkable || closedSet.Contains(neighbor)) {
                         //skip to next neighbor
@@ -52,7 +52,7 @@ public class Pathfinding : MonoBehaviour
                     }
 
                     //if new path to neigbor is shorter or neigbor is not in OPEN
-                    int newMovementCostToNeighbor = currentNode.gCost + GetDistance(currentNode, neighbor);
+                    int newMovementCostToNeighbor = currentNode.gCost + GetDistance(currentNode, neighbor) + neighbor.movementPenalty;
                     if (newMovementCostToNeighbor < neighbor.gCost || !openSet.Contains(neighbor)) {
                         //set f_cost of neighbor
                         neighbor.gCost = newMovementCostToNeighbor;
@@ -64,6 +64,9 @@ public class Pathfinding : MonoBehaviour
                         //if neighbor is not in OPEN add neigbor to OPEN
                         if (!openSet.Contains(neighbor))
                             openSet.Add(neighbor);
+                        else {
+                            openSet.UpdateItem(neighbor);
+                        }
                     }
 
                 }
