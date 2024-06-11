@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System;
 using System.Diagnostics;
 using System.Collections;
-using System.Linq;
-using System.Runtime.ExceptionServices;
 
 public class Pathfinding : MonoBehaviour
 {
@@ -20,9 +18,6 @@ public class Pathfinding : MonoBehaviour
     }
 
     IEnumerator FindPath (Vector3 startPosition, Vector3 endPosition){
-        Stopwatch sw = new Stopwatch();
-        sw.Start();
-
         Vector3[] waypoints = new Vector3[0];
         bool pathSuccess = false;
         
@@ -37,24 +32,19 @@ public class Pathfinding : MonoBehaviour
 
             //loop
             while (openSet.Count > 0) {
-                // current = node in OPEN with lowest f_cost
-                //remove current from OPEN
+                // current = node in OPEN with lowest f_cost, remove current from OPEN
                 Node currentNode = openSet.RemoveFirst();
 
                 //add current to CLOSED
                 closedSet.Add(currentNode);
-
-
+                
                 //if path has been found return
                 if (currentNode == targetNode){
-                    sw.Stop();
-                    UnityEngine.Debug.Log(sw.ElapsedMilliseconds);
                     pathSuccess = true;
                     break;
                 }
     
                 foreach (Node neighbor in grid.GetNeigbors(currentNode)) {
-
                     //if neighbor is not traversable or neigbor is in CLOSED
                     if (!neighbor.walkable || closedSet.Contains(neighbor)) {
                         //skip to next neighbor
@@ -87,6 +77,7 @@ public class Pathfinding : MonoBehaviour
         requestManager.FinishedProcessingPath(waypoints, pathSuccess);
     }
 
+    //follow the endNodes parents up to the start
     Vector3[] RetracePath(Node startNode, Node endNode) {
         List<Node> path = new List<Node>();
         Node currentNode = endNode; 
@@ -102,14 +93,15 @@ public class Pathfinding : MonoBehaviour
 
     }
 
+    //given a list of Nodes, only add the positions of the nodes that change direction
     Vector3[] SimplifyPath(List<Node> path) {
         List<Vector3> waypoints = new List<Vector3>();
         Vector2 directionOld = Vector2.zero;
 
         for (int i = 1; i < path.Count; i++) {
-            Vector2 directionNew = new Vector2(path[i-1].gridX - path[i].gridX, path[i-1].gridY - path[i].gridY);
-            if (directionNew != directionOld) {
-                waypoints.Add(path[i].worldPosition);
+            Vector2 directionNew = new Vector2(path[i-1].gridX - path[i].gridX, path[i-1].gridY - path[i].gridY);//get vector of next node
+            if (directionNew != directionOld) { //if vector changes
+                waypoints.Add(path[i].worldPosition);//add nodes position to waypoints
             }
             directionOld = directionNew;
         }
@@ -122,7 +114,8 @@ public class Pathfinding : MonoBehaviour
         int dstY = Math.Abs(nodeA.gridY - nodeB.gridY);
 
         if (dstX > dstY)
-            return 14*dstY + 10*(dstX-dstY);
+            //14 diagonally up for how ever many Y values, 10 sideways for the remaining x values.
+            return 14*dstY + 10*(dstX-dstY); //assuming each node is 10x10, diagonally across the node will be 14.
         return 14*dstX + 10*(dstY-dstX);
     }
 }

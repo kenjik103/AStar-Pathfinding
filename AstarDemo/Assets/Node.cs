@@ -45,6 +45,6 @@ public class Node : IHeapItem<Node>
             compare = hCost.CompareTo(nodeToCompare.hCost);
         }
 
-        return -compare;
+        return -compare; //returns 1 if node is lower than its comparison
     }
 }

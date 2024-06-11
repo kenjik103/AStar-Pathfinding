@@ -1,13 +1,14 @@
-using System.Collections;
 using System;
-using UnityEngine;
 
-
-//cave man style PriorityQueue heap implementation. Unfortunatly unity doesn't run a C# version new enough to use the .NET version of PriorityQueue
 public class Heap <T> where T : IHeapItem<T>
 {
     T[] items;
     int currentItemCount;
+    public int Count {
+        get {
+            return currentItemCount;
+        }
+    }
     
     public Heap(int maxHeapSize) {
         items = new T[maxHeapSize];
@@ -33,14 +34,9 @@ public class Heap <T> where T : IHeapItem<T>
         return Equals(items[item.HeapIndex], item);
     }
 
+    //in our pathfinding there are situations where we need to decrease the f_cost of a node. Because we only ever decrease the value, SortDown is not necessary
     public void UpdateItem(T item) {
         SortUp(item);
-    }
-
-    public int Count {
-        get {
-            return currentItemCount;
-        }
     }
 
     void SortUp (T item) {
@@ -48,7 +44,7 @@ public class Heap <T> where T : IHeapItem<T>
 
         while (true) {
             T parentItem = items[parentIndex];
-            if (item.CompareTo(parentItem) > 0){
+            if (item.CompareTo(parentItem) > 0){ //Swap if item is greather than its parent
                 Swap(item, parentItem);
             } else {
                 break;
@@ -62,10 +58,10 @@ public class Heap <T> where T : IHeapItem<T>
             int childIndexRight = item.HeapIndex * 2 + 2;
             int swapIndex = 0;
 
-            if (childIndexLeft < currentItemCount) {
+            if (childIndexLeft < currentItemCount) { //checking if left child exists
                 swapIndex = childIndexLeft;
                 if (childIndexRight < currentItemCount) {
-                    if (items[childIndexLeft].CompareTo(items[childIndexRight]) < 0) {
+                    if (items[childIndexLeft].CompareTo(items[childIndexRight]) < 0) { //checking which child is smaller
                         swapIndex = childIndexRight;
                     }
                 }
@@ -73,10 +69,10 @@ public class Heap <T> where T : IHeapItem<T>
                 if (item.CompareTo(items[swapIndex]) < 0){
                     Swap(item, items[swapIndex]);
                 } else {
-                    return;
+                    return; // if parent has lowest priority
                 }
             } else {
-                return;
+                return; //if parent has no children
             }
         }
     }
@@ -91,7 +87,8 @@ public class Heap <T> where T : IHeapItem<T>
     }
 }
 
-
+/**interface ensures items are comparable, assigns an index to each item. Comparing is neccessary because we must be able to sort items within
+the heap **/
 public interface IHeapItem<T> : IComparable<T> {
     int HeapIndex {
         get;

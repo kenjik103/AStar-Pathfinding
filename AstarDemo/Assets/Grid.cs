@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System;
 using UnityEngine;
-using UnityEditor.Experimental.GraphView;
 
 public class Grid : MonoBehaviour
 {
@@ -43,7 +42,7 @@ public class Grid : MonoBehaviour
                 int checkX = node.gridX + x;
                 int checkY = node.gridY + y;
 
-                if (checkX >= 0 && checkX < gridSizeY && checkY >=0 && checkY < gridSizeY) {
+                if (checkX >= 0 && checkX < gridSizeX && checkY >=0 && checkY < gridSizeY) {
                     neighbors.Add(grid[checkX, checkY]);
                 }
             }
@@ -53,11 +52,11 @@ public class Grid : MonoBehaviour
 
     void CreateGrid(){
         grid = new Node[gridSizeX, gridSizeY];
-        //basically (0,0,0) - (gridWorldSize.x,0,0) - (0, 0, gridWorldSize.y) = (-gridWorldSize.x,0,-gridWorldsize.y)
+        //basically (0,0,0) - (gridWorldSize.x/2,0,0) - (0, 0, gridWorldSize.y/2) = (-gridWorldSize.x/2,0,-gridWorldsize.y/2)
         Vector3 worldBottomLeft = transform.position + (Vector3.left * (gridWorldSize.x/2)) - (Vector3.forward * (gridWorldSize.y/2));
 
         for (int x = 0; x < gridSizeX; x++){
-            for (int y = 0; y < gridSizeX; y++){
+            for (int y = 0; y < gridSizeY; y++){
                 //getting a point smack in the middle of each node in our grid
                 Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * nodeDiamater + nodeRadius) + Vector3.forward * (y * nodeDiamater + nodeRadius);
 
@@ -65,7 +64,6 @@ public class Grid : MonoBehaviour
                 bool walkable = !Physics.CheckSphere(worldPoint, nodeRadius, unwalkableMask);
 
                 grid[x,y] = new Node(walkable, worldPoint, x, y);
-
             }
         }
 

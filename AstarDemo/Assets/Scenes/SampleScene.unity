@@ -744,6 +744,7 @@ GameObject:
   - component: {fileID: 1135254256}
   - component: {fileID: 1135254255}
   - component: {fileID: 1135254254}
+  - component: {fileID: 1135254258}
   m_Layer: 0
   m_Name: Seeker
   m_TagString: Untagged
@@ -833,12 +834,25 @@ Transform:
   m_GameObject: {fileID: 1135254253}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -38.1, y: 0, z: -38.5}
+  m_LocalPosition: {x: 40.4, y: 0, z: -44.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1135254258
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1135254253}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efb1005f8406a461abf22dd12acbd7ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1589426898}
 --- !u!1 &1475778322
 GameObject:
   m_ObjectHideFlags: 0
@@ -955,6 +969,7 @@ GameObject:
   - component: {fileID: 1510658728}
   - component: {fileID: 1510658729}
   - component: {fileID: 1510658730}
+  - component: {fileID: 1510658731}
   m_Layer: 0
   m_Name: A*
   m_TagString: Untagged
@@ -989,7 +1004,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 291923caa3c18450f902940f94b227fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onlyDisplayPathGizmos: 1
+  displayGridGizmos: 0
   unwalkableMask:
     serializedVersion: 2
     m_Bits: 256
@@ -1007,8 +1022,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3aaa7ca2520604d34960cf1f9d20c606, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  seaker: {fileID: 1135254257}
-  target: {fileID: 1589426898}
+--- !u!114 &1510658731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1510658726}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48b2ab4ef646b441b8290544f0dc29ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1589426894
 GameObject:
   m_ObjectHideFlags: 0
@@ -1110,7 +1135,7 @@ Transform:
   m_GameObject: {fileID: 1589426894}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 28.6, y: 0, z: 49.5}
+  m_LocalPosition: {x: -45.6, y: 0, z: 48}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
