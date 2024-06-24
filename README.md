@@ -1,17 +1,27 @@
 # AStar-Pathfinding
 
-Followed Sebastian Lague's [A* Pathfinding Tutorial](https://www.youtube.com/playlist?list=PLFt_AvWsXl0cq5Umv3pMC9SPnKjfp9eGW) to implement an A* pathfinding algorithm in Unity. While the algorithm itself wasn't too difficult to understand, the various optimizations and features were pretty wild. To prove to myself that I truly digested everything from the videos, I'm going use this README to explain all of the optimizations and features as much depth as possible.
+Followed Sebastian Lague's [A* Pathfinding Tutorial](https://www.youtube.com/playlist?list=PLFt_AvWsXl0cq5Umv3pMC9SPnKjfp9eGW) to implement an A* pathfinding algorithm in Unity. Beyond just the basic algorithm, there are a few features and optimizations included in the tutorial
 
 ### The Algorithm
 
-As I stated earlier, the algorithm it self isn't too complicated. We take the width and height of our world, and overlay it with a 2D grid of Nodes. Each node stores information that the algorithm needs, namely the f_cost, whether or not a node is traversable, and the parent of the node. F_cost is simply the sum of the g_cost (distance from starting node to current node) and h_cost (distance to current node to target/finish node). A* starts at the starting node, calculates the f_cost of all of its neighbors, sets the parent of each neigbor to the current node, and adds them to a list of nodes to be considered (it only does this if the neigbor is considered "traversable"). A* then takes the lowest f_cost from the list of nodes to be considered, marks it as the current node, and repeats. Once a neigboring node is found to be the target/finish node, the algorithm is done.
-
-This is a bit of an oversimplification, but that's the essence of it. Pseudocode is easy to follow and all over the internet so all things considered this was one of the easiest parts of the tutorial to follow.
-
-We can determine whether or not a node is traversable using Unity's LayerMask feature. Obstacles are marked with an "Unwalkable" layer within Unity, and in our script we simply check if a node collides with any object of the "unwalkable" layer type. If it does, we mark it as untraversable.
+This particular implementation of A* is limited to just a 2D plane. The algorithm creates a 2D grid of nodes that can be overlayed on top of a 2D world. Using Unity's LayerMask feature, obstacles can be placed and marked as untraversable. Objects can be assigned the "unit" script, which marks it as a seeker. The seekers will then run the pathfinding algorithm in search of a designated target.
 
 ### Optimization - Heap Implementation
 
-I mentioned earlier that each time A* wants to select a new current node, it searches through the list of nodes being considered and selects the one with the minimum f_cost. Doing this the traditional way via iterating through the entire list of nodes being considered is quite expensive. Thankfully, data structures, specifically a minimum heap exist. These data structres store data in such a way that the first item at index 0 is always the minimum value. 
+This algorithm makes use of a custom minimum-heap data structure. A* is constantly looking for nodes with the lowest f_cost, so using a minimum heap and storing the node with the smallest f_cost in the front of the data structure cuts this search time down to O(1), making it a huge optimization.
 
-In essence, a minimum heap can be visualized as a binary tree where nodes on the right are greater than nodes on the left. The node at the root always contains the smallest value. When a new node is added to the tree, it is added at the end. Then, it is compared to its parent and if it is less than its parent we swap it. We simply repeat that process till the new node is in its right place. Removing a node is a similar process. We remove the node at the root of the tree and return its value. We then insert whatever was at the end of our heap into this newly emptied root position. After that, we simply run a series of comparisons 
+### Feature - Desirable and Undesirable Paths
+
+Using Unity's LayerMask function, this tutorial enables us to add movement costs to terrain. This movement cost can be considered in our pathfinding algorithm, allowing us to lay down paths that our algorithm will prefer.
+
+### Feature - Blurring movement costs
+
+Although paths can be layed down, objects will somethimes stick to the edges of curved paths if thats the shortest possible route. To make objects move more naturally, a blurring effect is applied on each node, meaning nodes with neighboring undesirable nodes will also inherit some of that movement cost. This causes objects to prefer the center of desired paths, and give undesirable and untraversable objects a wider berth.
+
+### Feature - Path smoothing
+
+Because are nodes are arranged in a 2D grid, the path that objects end up following will consist of straight, jagged edges. Instead of storing every single node the object follows, one small optimization is to only store nodes that change direction from the previous node instead, creating a list of waypoints. Then, behind every waypoint we draw a "turn boundry", basically a line perpendicaular to the path that the node is following. Once this turn bourdary is established, if our seeker object crosses it we begin to roatate it torwards the next waypoint. This gives the object much smoother movement.
+
+### Optimization - Threading and IEnumerator
+
+The last optimization involves concurency. Implementing this algorithm on multiple objects can cause the program to freeze while the computer tries to calculate each objects path at the same time. To prevent this, the tutorial uses IEnumerator to force the CPU to handle one path at a time, keeping the program from freezing. It then uses Threading to run each of these path requests on a seperate thread, allowing the algorithm to smoothly handle multiple seeker objects at the same time.
